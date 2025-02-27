@@ -5,24 +5,29 @@ import java.io.Serializable;
 
 public class PostPaymentRequest implements Serializable {
 
-  @JsonProperty("card_number_last_four")
-  private int cardNumberLastFour;
+  @JsonProperty("card_number")
+  private String cardNumber;
   @JsonProperty("expiry_month")
   private int expiryMonth;
   @JsonProperty("expiry_year")
   private int expiryYear;
   private String currency;
   private int amount;
-  private int cvv;
-  public PostPaymentRequest(int cardNumberLastFour, int expiryMonth, int expiryYear, String currency, int amount, int cvv) {
+  private String cvv;
+
+  public PostPaymentRequest(String cardNumberLastFour, int expiryMonth, int expiryYear, String currency, int amount, int cvv) {
   }
 
-  public int getCardNumberLastFour() {
-    return cardNumberLastFour;
+  public PostPaymentRequest() {
+
   }
 
-  public void setCardNumberLastFour(int cardNumberLastFour) {
-    this.cardNumberLastFour = cardNumberLastFour;
+  public String getCardNumber() {
+    return cardNumber;
+  }
+
+  public void setCardNumber(String  cardNumber) {
+    this.cardNumber = cardNumber;
   }
 
   public int getExpiryMonth() {
@@ -57,11 +62,11 @@ public class PostPaymentRequest implements Serializable {
     this.amount = amount;
   }
 
-  public int getCvv() {
+  public String getCvv() {
     return cvv;
   }
 
-  public void setCvv(int cvv) {
+  public void setCvv(String cvv) {
     this.cvv = cvv;
   }
 
@@ -73,7 +78,7 @@ public class PostPaymentRequest implements Serializable {
   @Override
   public String toString() {
     return "PostPaymentRequest{" +
-        "cardNumberLastFour=" + cardNumberLastFour +
+        "cardNumberLastFour=" + cardNumber +
         ", expiryMonth=" + expiryMonth +
         ", expiryYear=" + expiryYear +
         ", currency='" + currency + '\'' +

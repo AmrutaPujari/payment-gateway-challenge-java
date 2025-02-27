@@ -9,17 +9,14 @@ import com.checkout.payment.gateway.enums.PaymentStatus;
 import com.checkout.payment.gateway.model.PostPaymentRequest;
 import com.checkout.payment.gateway.model.PostPaymentResponse;
 import com.checkout.payment.gateway.repository.PaymentsRepository;
-import java.util.UUID;
 import com.checkout.payment.gateway.service.PaymentGatewayService;
-import org.junit.Test;
-import org.junit.jupiter.api.Test;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
-
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import simulators.BankSimulator;
+import com.checkout.payment.gateway.simulators.BankSimulator;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -30,7 +27,10 @@ class PaymentGatewayControllerTest {
   @Autowired
   PaymentsRepository paymentsRepository;
 
-  @Test
+  @Autowired
+  PaymentStatus paymentStatus;
+
+  @org.junit.jupiter.api.Test
   void whenPaymentWithIdExistThenCorrectPaymentIsReturned() throws Exception {
     PostPaymentResponse payment = new PostPaymentResponse();
     payment.setId(UUID.randomUUID());
@@ -39,7 +39,7 @@ class PaymentGatewayControllerTest {
     payment.setStatus(PaymentStatus.AUTHORIZED);
     payment.setExpiryMonth(12);
     payment.setExpiryYear(2024);
-    payment.setCardNumberLastFour(4321);
+    payment.setCardNumberLastFour(String.valueOf(4321));
 
     paymentsRepository.add(payment);
 
@@ -53,37 +53,50 @@ class PaymentGatewayControllerTest {
         .andExpect(jsonPath("$.amount").value(payment.getAmount()));
   }
 
-  @Test
+  @org.junit.jupiter.api.Test
   void whenPaymentWithIdDoesNotExistThen404IsReturned() throws Exception {
     mvc.perform(MockMvcRequestBuilders.get("/payment/" + UUID.randomUUID()))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.message").value("Page not found"));
   }
 
-  @Test
-  void testProcessPaymentValid() {
+  @org.junit.jupiter.api.Test
+  public void testProcessPaymentValid() {
     PaymentsRepository storage = new PaymentsRepository();
     BankSimulator simulator = new BankSimulator();
     PostPaymentResponse response = new PostPaymentResponse();
     PaymentGatewayService gateway = new PaymentGatewayService(storage, simulator, response);
 
-    PostPaymentRequest payment = new PostPaymentRequest(8877, 04, 2025, "USD", 100, 123);
+    PostPaymentRequest payment = new PostPaymentRequest();
+    payment.setCardNumber("2222405343248879");
+    payment.setCvv(String.valueOf(123));
+    payment.setExpiryMonth(04);
+    payment.setExpiryYear(2026);
+    payment.setAmount(100);
+    payment.setCurrency("USD");
+
     PostPaymentResponse processedPayment = gateway.processPayment(payment);
 
-    assertEquals("Authorized", processedPayment.getStatus());
+    assertEquals(paymentStatus.AUTHORIZED, processedPayment.getStatus());
   }
 
-  @Test
-  void testProcessPaymentInvalidCard() {
+  @org.junit.jupiter.api.Test
+  public void testProcessPaymentInvalidCard() {
     PaymentsRepository storage = new PaymentsRepository();
     BankSimulator simulator = new BankSimulator();
     PostPaymentResponse response = new PostPaymentResponse();
     PaymentGatewayService gateway = new PaymentGatewayService(storage, simulator, response);
 
-    PostPaymentRequest payment = new PostPaymentRequest(8880, 04, 2025, "USD", 100, 123);
+    PostPaymentRequest payment = new PostPaymentRequest();
+    payment.setCardNumber("2222405343248878");
+    payment.setCvv(String.valueOf(123));
+    payment.setExpiryMonth(04);
+    payment.setExpiryYear(2026);
+    payment.setAmount(100);
+    payment.setCurrency("EUR");
     PostPaymentResponse processedPayment = gateway.processPayment(payment);
 
-    assertEquals("Declined", processedPayment.getStatus());
+    assertEquals(paymentStatus.DECLINED, processedPayment.getStatus());
 
 
   }

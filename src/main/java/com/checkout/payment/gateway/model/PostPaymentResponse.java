@@ -1,18 +1,20 @@
 package com.checkout.payment.gateway.model;
 
 import com.checkout.payment.gateway.enums.PaymentStatus;
+import org.springframework.stereotype.Component;
 import java.util.UUID;
 
+@Component
 public class PostPaymentResponse {
   private UUID id;
   private PaymentStatus status;
-  private int cardNumberLastFour;
+  private String cardNumberLastFour;
   private int expiryMonth;
   private int expiryYear;
   private String currency;
   private int amount;
 
-  public PostPaymentResponse(int cardNumberLastFour, int expiryMonth, int expiryYear, String currency, int amount, int cvv) {
+  public PostPaymentResponse(String cardNumberLastFour, String expiryMonth, String expiryYear, String currency, int amount, String cvv) {
   }
   public PostPaymentResponse(){}
 
@@ -32,11 +34,11 @@ public class PostPaymentResponse {
     this.status = status;
   }
 
-  public int getCardNumberLastFour() {
+  public String getCardNumberLastFour() {
     return cardNumberLastFour;
   }
 
-  public void setCardNumberLastFour(int cardNumberLastFour) {
+  public void setCardNumberLastFour(String cardNumberLastFour) {
     this.cardNumberLastFour = cardNumberLastFour;
   }
 

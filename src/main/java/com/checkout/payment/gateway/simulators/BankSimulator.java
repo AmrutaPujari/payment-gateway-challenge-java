@@ -1,4 +1,4 @@
-package simulators;
+package com.checkout.payment.gateway.simulators;
 
 import com.checkout.payment.gateway.model.PostPaymentRequest;
 import org.springframework.stereotype.Component;
@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class BankSimulator {
   public String processPayment(PostPaymentRequest payment) {
-    String cardNumber = String.valueOf(payment.getCardNumberLastFour());
+    String cardNumber = String.valueOf(payment.getCardNumber());
     char lastDigit = cardNumber.charAt(cardNumber.length() - 1);
 
     if (lastDigit == '0') {
@@ -14,9 +14,9 @@ public class BankSimulator {
     }
 
     if (lastDigit % 2 == 0) {
-      return "Declined";
+      return "DECLINED";
     } else {
-      return "Authorized";
+      return "AUTHORIZED";
     }
   }
 }
