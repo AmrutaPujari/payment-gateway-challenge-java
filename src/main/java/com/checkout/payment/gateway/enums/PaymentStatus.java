@@ -1,9 +1,8 @@
 package com.checkout.payment.gateway.enums;
 
 import com.fasterxml.jackson.annotation.JsonValue;
-import org.springframework.stereotype.Component;
 
-@Component
+
 public enum PaymentStatus {
   AUTHORIZED("Authorized"),
   DECLINED("Declined"),

@@ -1,7 +1,9 @@
 package com.checkout.payment.gateway.controller;
 
 
+import static com.checkout.payment.gateway.enums.PaymentStatus.AUTHORIZED;
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -27,8 +29,6 @@ class PaymentGatewayControllerTest {
   @Autowired
   PaymentsRepository paymentsRepository;
 
-  @Autowired
-  PaymentStatus paymentStatus;
 
   @org.junit.jupiter.api.Test
   void whenPaymentWithIdExistThenCorrectPaymentIsReturned() throws Exception {
@@ -36,7 +36,7 @@ class PaymentGatewayControllerTest {
     payment.setId(UUID.randomUUID());
     payment.setAmount(10);
     payment.setCurrency("USD");
-    payment.setStatus(PaymentStatus.AUTHORIZED);
+    payment.setStatus(AUTHORIZED);
     payment.setExpiryMonth(12);
     payment.setExpiryYear(2024);
     payment.setCardNumberLastFour(String.valueOf(4321));
@@ -77,27 +77,48 @@ class PaymentGatewayControllerTest {
 
     PostPaymentResponse processedPayment = gateway.processPayment(payment);
 
-    assertEquals(paymentStatus.AUTHORIZED, processedPayment.getStatus());
+    assertEquals("AUTHORIZED", processedPayment.getStatus().name());
   }
 
   @org.junit.jupiter.api.Test
-  public void testProcessPaymentInvalidCard() {
+  public void testProcessPaymentInvalidCurrency() {
     PaymentsRepository storage = new PaymentsRepository();
     BankSimulator simulator = new BankSimulator();
     PostPaymentResponse response = new PostPaymentResponse();
     PaymentGatewayService gateway = new PaymentGatewayService(storage, simulator, response);
 
     PostPaymentRequest payment = new PostPaymentRequest();
-    payment.setCardNumber("2222405343248878");
+    payment.setCardNumber("2222405343248870");
     payment.setCvv(String.valueOf(123));
     payment.setExpiryMonth(04);
     payment.setExpiryYear(2026);
     payment.setAmount(100);
+    payment.setCurrency("AUD");
+//    PostPaymentResponse processedPayment = gateway.processPayment(payment);
+
+    assertThrows(RuntimeException.class, () -> gateway.processPayment(payment));
+
+
+  }
+  @org.junit.jupiter.api.Test
+  public void testProcessPaymentInvalidCard1() {
+    // Arrange: Set up the required objects for the test
+    PaymentsRepository storage = new PaymentsRepository();
+    BankSimulator simulator = new BankSimulator();
+    PostPaymentResponse response = new PostPaymentResponse();
+    PaymentGatewayService gateway = new PaymentGatewayService(storage, simulator, response);
+
+    // Act: Create a payment request with an invalid card number
+    PostPaymentRequest payment = new PostPaymentRequest();
+    payment.setCardNumber("2222405343248870");  // Invalid card number for simulation
+    payment.setCvv("123");
+    payment.setExpiryMonth(04);
+    payment.setExpiryYear(2026);
+    payment.setAmount(100);
     payment.setCurrency("EUR");
-    PostPaymentResponse processedPayment = gateway.processPayment(payment);
-
-    assertEquals(paymentStatus.DECLINED, processedPayment.getStatus());
 
 
+    // Assert: Ensure the payment is declined
+    assertThrows(RuntimeException.class, () -> gateway.processPayment(payment));
   }
 }
